@@ -4,7 +4,11 @@ module.exports = class CategoriesController extends BaseController{
     //查询 分页
     async index(){
         try{
-            let items = await this.getPager('Category',['name']) //skip跳过执行条数；limit 限定返回条数
+            //'Category',['name']
+            let items = await this.getPager({
+                modelName:"Category",
+                fields:['name']
+            }) //skip跳过执行条数；limit 限定返回条数
             this.success(items);
         }catch(error){
             this.error(error);

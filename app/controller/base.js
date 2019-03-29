@@ -1,7 +1,10 @@
 const { Controller } = require('egg');
 
 class BaseController extends Controller{
-    async getPager(modelName,fields=[]){
+    get user(){
+        return this.ctx.session.user;
+    }
+    async getPager({modelName='',fields=[],populateFields=[]}){
         const {ctx} = this;
         let {pageNum=1,pageSize = 5,keyword = ''} = ctx.query;
         pageNum = isNaN(pageNum) ? 1 : parseInt(pageNum);
@@ -10,20 +13,18 @@ class BaseController extends Controller{
         if(keyword && fields.length>0){
             query['$or'] = fields.map(field => ({ [fields] : new RegExp(keyword)}))
         }
-        console.log(query);
-        console.log(1);
-        let items = await ctx.model[modelName].find(query).skip((pageNum - 1)*pageSize).limit(pageSize);
+        //Skip():使用skip()方法来跳过指定数量的数据,数字参数作为跳过的记录条数
+        //limit():指定从MongoDB中读取的记录条数
+        //populate把他从id变为对象使用,category存放的是分类的id;
         let total = await ctx.model[modelName].count(query);
-        return {
-                items,
-                total,
-                pageNum,
-                pageSize,
-                pageCount:Math.ceil(total/pageSize)
-            };
-    }
-    get user(){
-        return this.ctx.session.user;
+        let cursor = ctx.model[modelName].find(query).sort({_id:-1}).skip((pageNum - 1)*pageSize).limit(pageSize)
+        if(populateFields.length>0){
+            populateFields.forEach(field=>{
+                cursor = cursor.populate(field);
+            })
+        }
+        let items = await cursor;
+        return {items,total,pageNum,pageSize,pageCount:Math.ceil(total/pageSize)};
     }
     success(data){
         let {ctx} = this;

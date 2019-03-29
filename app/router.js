@@ -15,8 +15,9 @@ module.exports = app => {
   //文章
   router.resources("articles","/api/articles",controller.articles);
    
-  router.get('/api/articles/pv/:id', controller.articles.addPv);
-  router.post('/api/articles/comment/:id', controller.articles.addComment);
+  router.get('/api/articles/pv/:id', controller.articles.addPv); //阅读量
+  router.post('/api/articles/comment/:id', controller.articles.addComment);//评论接口
+  router.delete('/api/articles/:article_id/comment/:comment_id',controller.articles.removeComment);//删除评论
 };
 // router.get("/api/categories",controller.categories.index);
 // router.get("/api/categories",controller.categories.create);//创建
